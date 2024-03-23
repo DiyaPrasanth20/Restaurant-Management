@@ -33,7 +33,7 @@ function App() {
         )}
         {showReservationPrompt && (
           <div className="reservation-prompt">
-            <h2>Do you know what you want to eat?</h2>
+            <h2>Do you know where you want to eat?</h2>
             <div className="buttons">
               <button className="reservation-button" onClick={handleYesButtonClick}>Yes</button>
               <button className="reservation-button" onClick={handleNoButtonClick}>No</button>

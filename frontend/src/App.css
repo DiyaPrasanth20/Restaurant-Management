@@ -38,6 +38,8 @@
 
 .buttons {
   margin-top: 10px; /* Adjust margin-top to move buttons closer to text */
+  display: flex;
+  justify-content: center;
 }
 
 .reservation-button {
@@ -58,5 +60,20 @@
   font-family: 'Copperplate', sans-serif;
   font-size: 50px;
   font-weight: bold;
+  color: #333;
+}
+
+.reservation-prompt {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.question-text {
+  font-family: 'Copperplate', sans-serif;
+  font-size: 40px; /* Adjust font size */
+  font-weight: lighter; /* Reduce font weight */
   color: #333;
 }
