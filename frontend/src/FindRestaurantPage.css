@@ -2,5 +2,25 @@
     text-align: center;
     margin-top: 20px;
     font-family: 'Copperplate', sans-serif;
+    position: relative; /* Ensure relative positioning for absolute positioning inside */
+  }
+  
+  .image-wrapper {
+    position: relative; /* Ensure relative positioning for absolute positioning inside */
+  }
+  
+  .dropdown-container {
+    position: absolute;
+    top: 50%; /* Adjust vertical position */
+    left: 50%; /* Adjust horizontal position */
+    transform: translate(-50%, -50%); /* Center the dropdown */
+    background-color: rgba(255, 255, 255, 0.7); /* Background color with opacity */
+    padding: 20px; /* Add padding as needed */
+    border: 1px solid #ccc; /* Add border as needed */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add shadow */
+  }
+  
+  .restaurant-form {
+    /* Add styles for the form */
   }
   
