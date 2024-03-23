@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import './App.css';
 import imageOne from './images/imageOne.jpg';
 import imageThree from './images/imageThree.jpg';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import HelloWorldPage from './HelloWorldPage'; // Adjust the import path as needed
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import FindRestaurantPage from './FindRestaurantPage'; // Updated import path
 
 function App() {
   const [showReservationPrompt, setShowReservationPrompt] = useState(false);
@@ -38,7 +38,9 @@ function App() {
                     <h2>Do you know where you want to eat?</h2>
                     <div className="buttons">
                       <button className="reservation-button">Yes</button>
-                      <Link to="/hello-world"><button className="reservation-button">No</button></Link>
+                      <Link to="/find-restaurant">
+                        <button className="reservation-button">No</button>
+                      </Link>
                     </div>
                   </div>
                 )}
@@ -48,7 +50,7 @@ function App() {
               </div>
             </>
           } />
-          <Route path="/hello-world" element={<HelloWorldPage />} />
+          <Route path="/find-restaurant" element={<FindRestaurantPage />} />
         </Routes>
       </div>
     </Router>
