@@ -11,16 +11,17 @@
   
   .dropdown-container {
     position: absolute;
-    top: 50%; /* Adjust vertical position */
-    left: 50%; /* Adjust horizontal position */
-    transform: translate(-50%, -50%); /* Center the dropdown */
-    background-color: rgba(255, 255, 255, 0.7); /* Background color with opacity */
-    padding: 20px; /* Add padding as needed */
-    border: 1px solid #ccc; /* Add border as needed */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add shadow */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 60px; /* Increase padding to make the container larger */
+    width: 80%; /* Increase width of the container */
+    max-width: 600px; /* Set a maximum width for the container */
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
   
   .restaurant-form {
     /* Add styles for the form */
   }
-  

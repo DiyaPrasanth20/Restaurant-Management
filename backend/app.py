@@ -34,13 +34,15 @@ def get_cuisine_types():
 def get_matching_restaurants():
     try:
         cuisine_type = request.args.get('cuisine')
+        max_price = request.args.get('max_price')  # Get the max_price parameter
         connection = mysql.connector.connect(
             host='localhost',
             user='root',
             database='BooknDine'
         )
         cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM restaurants WHERE cuisine_type = %s;", (cuisine_type,))
+        # Modify the SQL query to include both cuisine type and max price conditions
+        cursor.execute("SELECT * FROM restaurants WHERE cuisine_type = %s AND max_price <= %s;", (cuisine_type, max_price))
         matching_restaurants = cursor.fetchall()
         return jsonify(matching_restaurants)
     except Exception as e:
@@ -51,6 +53,7 @@ def get_matching_restaurants():
             cursor.close()
         if connection is not None:
             connection.close()
+
 
 
 

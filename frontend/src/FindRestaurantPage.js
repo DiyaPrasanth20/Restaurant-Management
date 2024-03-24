@@ -5,7 +5,8 @@ import findResOne from './images/findResOne.jpg'; // Import the image file
 const FindRestaurantPage = () => {
   const [cuisineTypes, setCuisineTypes] = useState([]);
   const [selectedCuisine, setSelectedCuisine] = useState('');
-  const [maxPrice, setMaxPrice] = useState(''); // State to store the maximum price
+  const [maxPrice, setMaxPrice] = useState('');
+  const [maxPriceError, setMaxPriceError] = useState('');
   const [matchingRestaurants, setMatchingRestaurants] = useState([]);
 
   useEffect(() => {
@@ -17,10 +18,22 @@ const FindRestaurantPage = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    fetch(`/restaurants?cuisine=${selectedCuisine}&max_price=${maxPrice}`) // Include max_price in the fetch URL
-      .then(response => response.json())
-      .then(data => setMatchingRestaurants(data))
-      .catch(error => console.error('Error fetching matching restaurants:', error));
+    if (!isNaN(maxPrice) && maxPrice >= 0) {
+      fetch(`/restaurants?cuisine=${selectedCuisine}&max_price=${maxPrice}`)
+        .then(response => response.json())
+        .then(data => setMatchingRestaurants(data))
+        .catch(error => console.error('Error fetching matching restaurants:', error));
+      setMaxPriceError('');
+    } else {
+      setMaxPriceError('Enter a positive number');
+    }
+  };
+
+  const handleInputChange = (event) => {
+    const { value } = event.target;
+    if (value === '' || (!isNaN(value) && value >= 0)) {
+      setMaxPrice(value);
+    }
   };
 
   return (
@@ -40,17 +53,26 @@ const FindRestaurantPage = () => {
               </select>
             </div>
             <div className="form-group">
-              <label htmlFor="maxPrice">Max Price ($):</label> {/* Add label for max price input */}
-              <input type="number" id="maxPrice" name="maxPrice" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} /> {/* Input field for max price */}
+              <label htmlFor="maxPrice">Max Price ($):</label>
+              <input 
+                type="text" 
+                id="maxPrice" 
+                name="maxPrice" 
+                value={maxPrice} 
+                onChange={handleInputChange} 
+              />
+              {maxPriceError && <div className="error-message">{maxPriceError}</div>}
             </div>
             <button type="submit">Submit</button>
           </form>
           {matchingRestaurants.length > 0 && (
             <div>
-              <h2>Matching Restaurants:</h2>
+              <h2>Bon Appétit! Here are some options for you:</h2>
               <ul>
                 {matchingRestaurants.map(restaurant => (
-                  <li key={restaurant.name}>{restaurant.name} - {restaurant.city}</li>
+                  <li key={restaurant.name}>
+                    {restaurant.name} - {restaurant.city} - Rating: {restaurant.rating} - Dress Code: {restaurant.dress_code}
+                  </li>
                 ))}
               </ul>
             </div>
