@@ -53,7 +53,7 @@ const FindRestaurantPage = () => {
               </select>
             </div>
             <div className="form-group">
-              <label htmlFor="maxPrice">Max Price ($):</label>
+              <label htmlFor="maxPrice">Max Budget ($):</label>
               <input 
                 type="text" 
                 id="maxPrice" 
