@@ -8,6 +8,7 @@ const FindRestaurantPage = () => {
   const [maxPrice, setMaxPrice] = useState('');
   const [maxPriceError, setMaxPriceError] = useState('');
   const [matchingRestaurants, setMatchingRestaurants] = useState([]);
+  const [noMatchesFound, setNoMatchesFound] = useState(false);
 
   useEffect(() => {
     fetch('/cuisine_types')
@@ -21,7 +22,14 @@ const FindRestaurantPage = () => {
     if (!isNaN(maxPrice) && maxPrice >= 0) {
       fetch(`/restaurants?cuisine=${selectedCuisine}&max_price=${maxPrice}`)
         .then(response => response.json())
-        .then(data => setMatchingRestaurants(data))
+        .then(data => {
+          if (data.length === 0) {
+            setNoMatchesFound(true);
+          } else {
+            setNoMatchesFound(false);
+          }
+          setMatchingRestaurants(data);
+        })
         .catch(error => console.error('Error fetching matching restaurants:', error));
       setMaxPriceError('');
     } else {
@@ -65,6 +73,7 @@ const FindRestaurantPage = () => {
             </div>
             <button type="submit">Submit</button>
           </form>
+          {noMatchesFound && <div className="no-matches">No matches found!</div>}
           {matchingRestaurants.length > 0 && (
             <div>
               <h2>Bon Appétit! Here are some options for you:</h2>
