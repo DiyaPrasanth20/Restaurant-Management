@@ -30,11 +30,36 @@ def get_cuisine_types():
             connection.close()
 
 
+@app.route('/locations', methods=['GET'])
+def get_locations():
+    try:
+        connection = mysql.connector.connect(
+            host='localhost',
+            user='root',
+            database='BooknDine'
+        )
+        cursor = connection.cursor()
+        cursor.execute("SELECT DISTINCT city FROM restaurants;")
+        locations = [row[0] for row in cursor.fetchall()]
+        response = jsonify(locations)
+        return response
+    except Exception as e:
+        error_message = "An error occurred while fetching locations."
+        return jsonify({'error': error_message}), 500  # Return JSON error response with status code 500
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
+
+
 @app.route('/restaurants', methods=['GET'])
 def get_matching_restaurants():
     try:
         cuisine_type = request.args.get('cuisine')
         max_price = request.args.get('max_price')  # Get the max_price parameter
+        city =  request.args.get('city')
         connection = mysql.connector.connect(
             host='localhost',
             user='root',
@@ -42,7 +67,7 @@ def get_matching_restaurants():
         )
         cursor = connection.cursor(dictionary=True)
         # Modify the SQL query to include both cuisine type and max price conditions
-        cursor.execute("SELECT * FROM restaurants WHERE cuisine_type = %s AND max_price <= %s;", (cuisine_type, max_price))
+        cursor.execute("SELECT * FROM restaurants WHERE cuisine_type = %s AND max_price <= %s AND city = %s;", (cuisine_type, max_price, city))
         matching_restaurants = cursor.fetchall()
         return jsonify(matching_restaurants)
     except Exception as e:

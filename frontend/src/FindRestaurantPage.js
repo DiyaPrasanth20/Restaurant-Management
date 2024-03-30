@@ -5,6 +5,8 @@ import findResOne from './images/findResOne.jpg'; // Import the image file
 const FindRestaurantPage = () => {
   const [cuisineTypes, setCuisineTypes] = useState([]);
   const [selectedCuisine, setSelectedCuisine] = useState('');
+  const [locations, setLocations] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [maxPriceError, setMaxPriceError] = useState('');
   const [matchingRestaurants, setMatchingRestaurants] = useState([]);
@@ -17,10 +19,17 @@ const FindRestaurantPage = () => {
       .catch(error => console.error('Error fetching cuisine types:', error));
   }, []);
 
+  useEffect(() => {
+    fetch('/locations')
+      .then(response => response.json())
+      .then(data => setLocations(data))
+      .catch(error => console.error('Error fetching locations:', error));
+  }, []);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!isNaN(maxPrice) && maxPrice >= 0) {
-      fetch(`/restaurants?cuisine=${selectedCuisine}&max_price=${maxPrice}`)
+      fetch(`/restaurants?cuisine=${selectedCuisine}&max_price=${maxPrice}&city=${selectedLocation}`)
         .then(response => response.json())
         .then(data => {
           if (data.length === 0) {
@@ -61,6 +70,15 @@ const FindRestaurantPage = () => {
               </select>
             </div>
             <div className="form-group">
+              <label htmlFor="location">Select Location:</label>
+               <select id="location" name="location" value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)}>
+                <option value="">Select Location</option>
+                {locations.map(location => (
+                <option key={location} value={location}>{location}</option>
+                ))}
+                </select>
+                </div>
+            <div className="form-group">
               <label htmlFor="maxPrice">Max Budget ($):</label>
               <input 
                 type="text" 
@@ -76,7 +94,7 @@ const FindRestaurantPage = () => {
           {noMatchesFound && <div className="no-matches">No matches found!</div>}
           {matchingRestaurants.length > 0 && (
             <div>
-              <h2>Bon Appétit! Here are some options for you:</h2>
+              <h2>Bon Appétit! Here are {matchingRestaurants.length} options for you:</h2>
               <ul>
                 {matchingRestaurants.map(restaurant => (
                   <li key={restaurant.name}>
