@@ -4,6 +4,7 @@ import imageOne from './images/imageOne.jpg';
 import imageThree from './images/imageThree.jpg';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import FindRestaurantPage from './FindRestaurantPage'; // Updated import path
+import BookPage from './BookPage'; // Import BookPage component
 
 function App() {
   const [showReservationPrompt, setShowReservationPrompt] = useState(false);
@@ -37,7 +38,9 @@ function App() {
                   <div className="reservation-prompt">
                     <h2>Do you know where you want to eat?</h2>
                     <div className="buttons">
-                      <button className="reservation-button">Yes</button>
+                      <Link to="/book-page">
+                        <button className="reservation-button">Yes</button>
+                      </Link>
                       <Link to="/find-restaurant">
                         <button className="reservation-button">No</button>
                       </Link>
@@ -51,6 +54,7 @@ function App() {
             </>
           } />
           <Route path="/find-restaurant" element={<FindRestaurantPage />} />
+          <Route path="/book-page" element={<BookPage />} /> {/* Use BookPage component */}
         </Routes>
       </div>
     </Router>
