@@ -31,55 +31,6 @@ def get_cuisine_types():
 
 
 
-#for the BookPage.js
-@app.route('/restaurant_names', methods=['GET'])
-def fetch_restaurant_names():
-    try:
-        connection = mysql.connector.connect(
-            host='localhost',
-            user='root',
-            database='BooknDine'
-        )
-        cursor = connection.cursor()
-        cursor.execute("SELECT DISTINCT restaurant_name FROM availabilities WHERE num_tables_open = 2;")
-        cuisine_types = [row[0] for row in cursor.fetchall()]
-        response =  jsonify(cuisine_types)
-        return response
-    except Exception as e:
-        error_message = "An error occurred while fetching restaurant_names"
-        return jsonify({'error': error_message}), 500  # Return JSON error response with status code 500
-    finally:
-        if cursor is not None:
-            cursor.close()
-        if connection is not None:
-            connection.close()
-
-
-@app.route('/dates', methods=['GET'])
-def fetch_dates():
-    try:
-        restaurant_name = request.args.get('restaurant_name')
-        connection = mysql.connector.connect(
-            host='localhost',
-            user='root',
-            database='BooknDine'
-        )
-        cursor = connection.cursor()
-        cursor.execute("SELECT DISTINCT date FROM availabilities WHERE restaurant_name = %s;", (restaurant_name,))
-        dates = [row[0] for row in cursor.fetchall()]
-        response = jsonify(dates)
-        return response
-    except Exception as e:
-        error_message = "An error occurred while fetching dates."
-        return jsonify({'error': error_message}), 500  # Return JSON error response with status code 500
-    finally:
-        if cursor is not None:
-            cursor.close()
-        if connection is not None:
-            connection.close()
-
-
-
 
 @app.route('/locations', methods=['GET'])
 def get_locations():
@@ -129,6 +80,115 @@ def get_matching_restaurants():
             cursor.close()
         if connection is not None:
             connection.close()
+
+
+
+
+
+
+#for the BookPage.js
+@app.route('/restaurant_names', methods=['GET'])
+def fetch_restaurant_names():
+    try:
+        connection = mysql.connector.connect(
+            host='localhost',
+            user='root',
+            database='BooknDine'
+        )
+        cursor = connection.cursor()
+        cursor.execute("SELECT DISTINCT restaurant_name FROM availabilities WHERE num_tables_open >= 1;")
+        cuisine_types = [row[0] for row in cursor.fetchall()]
+        response =  jsonify(cuisine_types)
+        return response
+    except Exception as e:
+        error_message = "An error occurred while fetching restaurant_names"
+        return jsonify({'error': error_message}), 500  # Return JSON error response with status code 500
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
+
+@app.route('/dates', methods=['GET'])
+def fetch_dates():
+    try:
+        restaurant_name = request.args.get('restaurant_name')
+        connection = mysql.connector.connect(
+            host='localhost',
+            user='root',
+            database='BooknDine'
+        )
+        cursor = connection.cursor()
+        cursor.execute("SELECT DISTINCT date FROM availabilities WHERE restaurant_name = %s AND num_tables_open >= 1;", (restaurant_name,))
+        dates = [row[0] for row in cursor.fetchall()]
+        response = jsonify(dates)
+        return response
+    except Exception as e:
+        error_message = "An error occurred while fetching dates."
+        return jsonify({'error': error_message}), 500  # Return JSON error response with status code 500
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
+
+
+
+
+# Update num_tables_open for the selected restaurant on the selected date
+@app.route('/book-table', methods=['PUT'])
+def book_table():
+    try:
+        restaurant_name = request.args.get('restaurant_name')
+        date = request.args.get('date')
+        connection = mysql.connector.connect(
+            host='localhost',
+            user='root',
+            database='BooknDine'
+        )
+        cursor = connection.cursor()
+        cursor.execute("UPDATE availabilities SET num_tables_open = num_tables_open - 1 WHERE restaurant_name = %s AND date = %s;", (restaurant_name, date))
+        connection.commit()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        error_message = "An error occurred while booking table."
+        return jsonify({'error': error_message}), 500
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
+
+# Create a new reservation
+@app.route('/create-reservation', methods=['POST'])
+def create_reservation():
+    try:
+        data = request.get_json()
+        restaurant_name = data['restaurant_name']
+        booking_date = data['booking_date']
+        connection = mysql.connector.connect(
+            host='localhost',
+            user='root',
+            database='BooknDine'
+        )
+        cursor = connection.cursor()
+        cursor.execute("INSERT INTO reservation (restaurant_name, booking_date) VALUES (%s, %s);", (restaurant_name, booking_date))
+        reservation_code = cursor.lastrowid  # Get the last inserted row id, which is the reservation code
+        connection.commit()
+        return jsonify({'success': True, 'reservation_code': reservation_code}), 200
+    except Exception as e:
+        error_message = "An error occurred while creating reservation."
+        return jsonify({'error': error_message}), 500
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
+
 
 
 
