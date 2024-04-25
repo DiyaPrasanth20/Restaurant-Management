@@ -7,6 +7,7 @@ function BookPage() {
   const [selectedRestaurant, setSelectedRestaurant] = useState('');
   const [dates, setDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState('');
+  const [reservationMessage, setReservationMessage] = useState('');
 
   useEffect(() => {
     fetchRestaurantNames();
@@ -67,7 +68,7 @@ function BookPage() {
                 if (data.success) {
                   // Handle success
                   console.log('Reservation created successfully!');
-                  alert(`Your reservation code is ${data.reservation_code}. Have a great time!`);
+                  setReservationMessage(`Your reservation code is ${data.reservation_code}. Have a great time!`);
                 } else {
                   // Handle error
                   console.error('Failed to create reservation:', data.error);
@@ -111,6 +112,7 @@ function BookPage() {
           </div>
           <button type="submit">Book Now!</button>
         </form>
+        {reservationMessage && <p>{reservationMessage}</p>}
         {/* Add other content here */}
       </div>
     </div>
