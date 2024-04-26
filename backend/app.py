@@ -136,57 +136,51 @@ def fetch_dates():
 
 
 
-# Define the stored procedure
-def create_book_table_proc(cursor):
-    create_proc_query = """
-    CREATE PROCEDURE book_table_proc(
-        IN p_restaurant_name VARCHAR(255),
-        IN p_date VARCHAR(20),
-        OUT p_reservation_code INT
-    )
+# Define the stored procedure creation query
+create_proc_query = """
+CREATE PROCEDURE book_table_proc(
+    IN p_restaurant_name VARCHAR(255),
+    IN p_date VARCHAR(20),
+    OUT p_reservation_code INT
+)
+BEGIN
+    -- Declare variables for error handling
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
-        -- Declare variables for error handling
-        DECLARE EXIT HANDLER FOR SQLEXCEPTION
-        BEGIN
-            -- Rollback the transaction if an error occurs
-            ROLLBACK;
-            -- Return a negative reservation code to indicate failure
-            SET p_reservation_code = -1;
-        END;
-
-        -- Start the transaction
-        START TRANSACTION;
-
-        -- Try updating the availability table
-        UPDATE availabilities 
-        SET num_tables_open = num_tables_open - 1 
-        WHERE restaurant_name = p_restaurant_name AND date = p_date;
-
-        -- Check if update was successful
-        IF ROW_COUNT() = 0 THEN
-            -- Rollback and return negative reservation code if no rows were updated
-            ROLLBACK;
-            SET p_reservation_code = -1;
-        END IF;
-
-        -- Try inserting the reservation
-        INSERT INTO reservation (restaurant_name, booking_date) VALUES (p_restaurant_name, p_date);
-
-        -- Get the last inserted reservation code
-        SET p_reservation_code = LAST_INSERT_ID();
-
-        -- Commit the transaction
-        COMMIT;
-
-        -- Return the reservation code
-        SELECT p_reservation_code AS message;
+        -- Rollback the transaction if an error occurs
+        ROLLBACK;
+        -- Return a negative reservation code to indicate failure
+        SET p_reservation_code = -1;
     END;
-    """
-    
-    cursor.execute("DROP PROCEDURE IF EXISTS book_table_proc")
-    cursor.execute(create_proc_query)
 
+    -- Start the transaction
+    START TRANSACTION;
 
+    -- Try updating the availability table
+    UPDATE availabilities 
+    SET num_tables_open = num_tables_open - 1 
+    WHERE restaurant_name = p_restaurant_name AND date = p_date;
+
+    -- Check if update was successful
+    IF ROW_COUNT() = 0 THEN
+        -- Rollback and return negative reservation code if no rows were updated
+        ROLLBACK;
+        SET p_reservation_code = -1;
+    END IF;
+
+    -- Try inserting the reservation
+    INSERT INTO reservation (restaurant_name, booking_date) VALUES (p_restaurant_name, p_date);
+
+    -- Get the last inserted reservation code
+    SET p_reservation_code = LAST_INSERT_ID();
+
+    -- Commit the transaction
+    COMMIT;
+
+    -- Return the reservation code
+    SELECT p_reservation_code AS message;
+END;
+"""
 
 # Define the route
 @app.route('/book-table', methods=['PUT'])
@@ -202,8 +196,13 @@ def book_table():
         )
         cursor = connection.cursor()
 
-        # Create the stored procedure
-        create_book_table_proc(cursor)
+        # Check if the stored procedure exists
+        cursor.execute("SHOW PROCEDURE STATUS LIKE 'book_table_proc'")
+        procedure_exists = cursor.fetchone()
+
+        # If the procedure doesn't exist, create it
+        if not procedure_exists:
+            cursor.execute(create_proc_query)
 
         # Call the stored procedure
         cursor.callproc("book_table_proc", (restaurant_name, date, 0))
@@ -222,6 +221,7 @@ def book_table():
             cursor.close()
         if connection is not None:
             connection.close()
+
 
 
 
