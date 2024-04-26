@@ -41,45 +41,25 @@ function BookPage() {
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
   };
+  
 
   const handleSubmit = (event) => {
     event.preventDefault();
     if (selectedRestaurant && selectedDate) {
-      // Make API request to update num_tables_open
       fetch(`/book-table?restaurant_name=${selectedRestaurant}&date=${selectedDate}`, {
         method: 'PUT',
       })
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            // Make API request to create a new reservation
-            fetch(`/create-reservation`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                restaurant_name: selectedRestaurant,
-                booking_date: selectedDate,
-              }),
-            })
-              .then(response => response.json())
-              .then(data => {
-                if (data.success) {
-                  // Handle success
-                  console.log('Reservation created successfully!');
-                  if (data.reservation_code !== undefined) {
-                    console.log(data.reservation_code);
-                  } else {
-                    console.error('Reservation code is missing or undefined');
-                  }
-                  setReservationMessage(`Your reservation code is ${data.reservation_code}. Have a great time!`);
-                } else {
-                  // Handle error
-                  console.error('Failed to create reservation:', data.error);
-                }
-              })
-              .catch(error => console.error('Error creating reservation:', error));
+            // Handle success
+            console.log('Table booked successfully!');
+            if (data.reservation_code !== undefined) {
+              console.log(data.reservation_code);
+            } else {
+              console.error('Reservation code is missing or undefined');
+            }
+            setReservationMessage(`Your reservation code is ${data.reservation_code}. Have a great time!`);
           } else {
             // Handle error
             console.error('Failed to book table:', data.error);
@@ -91,6 +71,7 @@ function BookPage() {
       console.error('Please select both restaurant and date.');
     }
   };
+
 
   return (
     <div className="book-page-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
