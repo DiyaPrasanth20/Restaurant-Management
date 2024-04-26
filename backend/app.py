@@ -162,33 +162,80 @@ def book_table():
             connection.close()
 
 
-# Create a new reservation
+
+##################### EXPERIMENT BEGINS ######################
+
 @app.route('/create-reservation', methods=['POST'])
 def create_reservation():
     try:
         data = request.get_json()
         restaurant_name = data['restaurant_name']
         booking_date = data['booking_date']
+
         connection = mysql.connector.connect(
             host='localhost',
             user='root',
             database='BooknDine'
         )
         cursor = connection.cursor()
-        cursor.execute("INSERT INTO reservation (restaurant_name, booking_date) VALUES (%s, %s);", (restaurant_name, booking_date))
-        reservation_code = cursor.lastrowid  # Get the last inserted row id, which is the reservation code
-        connection.commit()
+
+        # Create the stored procedure
+        create_proc_query = """
+        CREATE PROCEDURE create_reservation_proc(
+            IN p_restaurant_name VARCHAR(255),
+            IN p_booking_date VARCHAR(20),  -- Change data type to VARCHAR
+            OUT p_reservation_code INT
+        )
+        BEGIN
+            -- Declare variables for error handling
+            DECLARE EXIT HANDLER FOR SQLEXCEPTION
+            BEGIN
+                -- Rollback the transaction if an error occurs
+                ROLLBACK;
+                -- Return a negative reservation code to indicate failure
+                SET p_reservation_code = -1;
+            END;
+
+            -- Start the transaction
+            START TRANSACTION;
+
+            -- Debug output to check input parameters
+            SELECT p_restaurant_name, p_booking_date;
+
+            -- Try inserting the reservation
+            INSERT INTO reservation (restaurant_name, booking_date) VALUES (p_restaurant_name, p_booking_date);
+
+            -- Get the last inserted reservation code
+            SET p_reservation_code = LAST_INSERT_ID();
+
+            -- Commit the transaction
+            COMMIT;
+
+            -- Return the reservation code
+            SELECT p_reservation_code AS message;
+        END
+        """
+
+        cursor.execute("DROP PROCEDURE IF EXISTS create_reservation_proc")
+        cursor.execute(create_proc_query)
+
+        # Call the stored procedure
+        cursor.callproc("create_reservation_proc", (restaurant_name, booking_date, 0))
+
+        # Get the output parameter (reservation_code)
+        for result in cursor.stored_results():
+            reservation_code = result.fetchone()[0]
+
         return jsonify({'success': True, 'reservation_code': reservation_code}), 200
     except Exception as e:
-        error_message = "An error occurred while creating reservation."
+        error_message = "An error occurred while creating reservation: " + str(e)
+        print("Error:", e)  # Print the error message to debug
         return jsonify({'error': error_message}), 500
     finally:
         if cursor is not None:
             cursor.close()
         if connection is not None:
             connection.close()
-
-
 
 
 

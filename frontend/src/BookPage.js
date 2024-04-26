@@ -68,6 +68,11 @@ function BookPage() {
                 if (data.success) {
                   // Handle success
                   console.log('Reservation created successfully!');
+                  if (data.reservation_code !== undefined) {
+                    console.log(data.reservation_code);
+                  } else {
+                    console.error('Reservation code is missing or undefined');
+                  }
                   setReservationMessage(`Your reservation code is ${data.reservation_code}. Have a great time!`);
                 } else {
                   // Handle error
