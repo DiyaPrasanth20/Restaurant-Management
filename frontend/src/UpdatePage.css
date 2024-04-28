@@ -1,0 +1,81 @@
+/* UpdatePage.css */
+
+.find-restaurant-container {
+    height: 100vh; /* Set the height to full viewport height */
+    width: 100vw; /* Set the width to full viewport width */
+    background-size: cover; /* Ensure background covers the full container */
+    background-position: center; /* Center the background image */
+    display: flex;
+    align-items: center; /* Align content vertically */
+    justify-content: center; /* Align content horizontally */
+  }
+  
+  .content-wrapper {
+    background-color: rgba(255, 255, 255, 0.8); /* Adjust transparency as needed */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: auto; /* Adjust width as needed, or use max-width for better control */
+    max-width: 80%; /* Example to prevent it from covering the full width */
+  }
+  
+  .button-container {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .update-button,
+  .delete-button {
+    background-color: #ADD8E6;
+    color: rgb(11, 10, 10);
+    border: none;
+    padding: 15px 30px;
+    margin: 0 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    outline: none;
+    box-shadow: 2 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .update-button:hover,
+  .delete-button:hover {
+    opacity: 0.9;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  button {
+    padding: 10px 20px;
+    margin-top: 10px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+
+  .reservation-input {
+  margin-top: 10px;
+  padding: 10px;
+  font-size: 16px;
+  width: 80%; /* Adjust based on your design */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}

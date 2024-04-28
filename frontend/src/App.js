@@ -3,8 +3,9 @@ import './App.css';
 import imageOne from './images/imageOne.jpg';
 import imageThree from './images/imageThree.jpg';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import FindRestaurantPage from './FindRestaurantPage'; // Updated import path
-import BookPage from './BookPage'; // Import BookPage component
+import FindRestaurantPage from './FindRestaurantPage';
+import BookPage from './BookPage';
+import UpdatePage from './UpdatePage'; // Import UpdatePage component
 
 function App() {
   const [showReservationPrompt, setShowReservationPrompt] = useState(false);
@@ -29,9 +30,11 @@ function App() {
                     <button className="reservation-button" onClick={handleAddReservationClick}>
                       Add Reservation
                     </button>
-                    <button className="reservation-button">
-                      Delete/Modify Reservation
-                    </button>
+                    <Link to="/update-reservation">
+                      <button className="reservation-button">
+                        Delete/Modify Reservation
+                      </button>
+                    </Link>
                   </div>
                 )}
                 {showReservationPrompt && (
@@ -54,7 +57,8 @@ function App() {
             </>
           } />
           <Route path="/find-restaurant" element={<FindRestaurantPage />} />
-          <Route path="/book-page" element={<BookPage />} /> {/* Use BookPage component */}
+          <Route path="/book-page" element={<BookPage />} />
+          <Route path="/update-reservation" element={<UpdatePage />} /> {/* Route for UpdatePage */}
         </Routes>
       </div>
     </Router>

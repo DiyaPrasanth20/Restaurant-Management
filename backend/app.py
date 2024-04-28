@@ -230,6 +230,51 @@ def book_table():
 
 
 
+##############FOR DELETION ###############################
+
+@app.route('/delete-reservation/<int:reservation_code>', methods=['DELETE'])
+def delete_reservation(reservation_code):
+    connection = None
+    try:
+        connection = mysql.connector.connect(
+            host='localhost',
+            user='root',
+            database='BooknDine'
+        )
+        cursor = connection.cursor()
+
+        # Start the transaction
+        cursor.execute("START TRANSACTION")
+
+        # First, retrieve necessary data before deleting
+        cursor.execute("SELECT restaurant_name, booking_date FROM reservation WHERE reservation_code = %s", (reservation_code,))
+        reservation_details = cursor.fetchone()
+        if not reservation_details:
+            connection.rollback()  # Rollback if no reservation found
+            return jsonify({'error': 'No reservation found with that code'}), 404
+
+        # Now, delete the reservation
+        cursor.execute("DELETE FROM reservation WHERE reservation_code = %s", (reservation_code,))
+
+        # If the reservation was found and deleted, update the availabilities
+        restaurant_name, booking_date = reservation_details
+        cursor.execute("""
+            UPDATE availabilities
+            SET num_tables_open = num_tables_open + 1
+            WHERE restaurant_name = %s AND date = %s
+        """, (restaurant_name, booking_date))
+
+        connection.commit()
+        return jsonify({'success': 'Reservation deleted and availability updated successfully'}), 200
+    except Exception as e:
+        if connection:
+            connection.rollback()
+        print(f"An error occurred: {str(e)}")
+        return jsonify({'error': 'Failed to delete reservation'}), 500
+    finally:
+        if connection:
+            connection.close()
+
 
 
 
