@@ -7,6 +7,7 @@ function BookPage() {
   const [selectedRestaurant, setSelectedRestaurant] = useState('');
   const [dates, setDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState('');
+  const [occasion, setOccasion] = useState(''); // State to store the occasion
   const [reservationMessage, setReservationMessage] = useState('');
 
   useEffect(() => {
@@ -41,18 +42,21 @@ function BookPage() {
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
   };
-  
+
+  const handleOccasionChange = (event) => {
+    setOccasion(event.target.value); // Update the occasion state
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    console.log(occasion);
     if (selectedRestaurant && selectedDate) {
-      fetch(`/book-table?restaurant_name=${selectedRestaurant}&date=${selectedDate}`, {
+      fetch(`/book-table?restaurant_name=${selectedRestaurant}&date=${selectedDate}&occasion=${occasion}`, {
         method: 'PUT',
       })
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            // Handle success
             console.log('Table booked successfully!');
             if (data.reservation_code !== undefined) {
               console.log(data.reservation_code);
@@ -61,17 +65,14 @@ function BookPage() {
             }
             setReservationMessage(`Your reservation code is ${data.reservation_code}. Have a great time!`);
           } else {
-            // Handle error
             console.error('Failed to book table:', data.error);
           }
         })
         .catch(error => console.error('Error booking table:', error));
     } else {
-      // Handle error, both restaurant and date must be selected
-      console.error('Please select both restaurant and date.');
+      console.error('Please select both restaurant, date, and specify an occasion.');
     }
   };
-
 
   return (
     <div className="book-page-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
@@ -95,6 +96,10 @@ function BookPage() {
                 <option key={date} value={date}>{date}</option>
               ))}
             </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="occasion">Occasion:</label>
+            <input type="text" id="occasion" name="occasion" value={occasion} onChange={handleOccasionChange} placeholder="Leave blank if none" />
           </div>
           <button type="submit">Book Now!</button>
         </form>

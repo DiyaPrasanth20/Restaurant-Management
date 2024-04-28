@@ -26,3 +26,9 @@ date TEXT,
 num_tables_open INTEGER,
 FOREIGN KEY (restaurant_name) REFERENCES restaurants(name)
 );
+
+
+
+---------- to reset reservation table primary key ----------------
+
+ALTER TABLE reservation AUTO_INCREMENT = 1;

@@ -141,6 +141,7 @@ create_proc_query = """
 CREATE PROCEDURE book_table_proc(
     IN p_restaurant_name VARCHAR(255),
     IN p_date VARCHAR(20),
+    IN p_occasion TEXT,
     OUT p_reservation_code INT
 )
 BEGIN
@@ -168,8 +169,12 @@ BEGIN
         SET p_reservation_code = -1;
     END IF;
 
-    -- Try inserting the reservation
-    INSERT INTO reservation (restaurant_name, booking_date) VALUES (p_restaurant_name, p_date);
+    -- Prepare and execute insert statement
+    SET stmt_insert = CONCAT('INSERT INTO reservation (restaurant_name, booking_date, occasion) VALUES (?, ?, ?)');
+    PREPARE insert_stmt FROM stmt_insert;
+    SET @res_occasion = p_occasion;
+    EXECUTE insert_stmt USING @res_name, @res_date, @res_occasion;
+    DEALLOCATE PREPARE insert_stmt;
 
     -- Get the last inserted reservation code
     SET p_reservation_code = LAST_INSERT_ID();
@@ -188,6 +193,7 @@ def book_table():
     try:
         restaurant_name = request.args.get('restaurant_name')
         date = request.args.get('date')
+        occasion = request.args.get('occasion')
 
         connection = mysql.connector.connect(
             host='localhost',
@@ -205,7 +211,7 @@ def book_table():
             cursor.execute(create_proc_query)
 
         # Call the stored procedure
-        cursor.callproc("book_table_proc", (restaurant_name, date, 0))
+        cursor.callproc("book_table_proc", (restaurant_name, date, occasion, 0))
 
         # Get the output parameter (reservation_code)
         for result in cursor.stored_results():
@@ -221,6 +227,7 @@ def book_table():
             cursor.close()
         if connection is not None:
             connection.close()
+
 
 
 
