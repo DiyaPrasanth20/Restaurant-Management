@@ -246,14 +246,14 @@ def delete_reservation(reservation_code):
         # Start the transaction
         cursor.execute("START TRANSACTION")
 
-        # First, retrieve necessary data before deleting
+        # retrieve necessary data before deleting
         cursor.execute("SELECT restaurant_name, booking_date FROM reservation WHERE reservation_code = %s", (reservation_code,))
         reservation_details = cursor.fetchone()
         if not reservation_details:
             connection.rollback()  # Rollback if no reservation found
             return jsonify({'error': 'No reservation found with that code'}), 404
 
-        # Now, delete the reservation
+        # delete the reservation
         cursor.execute("DELETE FROM reservation WHERE reservation_code = %s", (reservation_code,))
 
         # If the reservation was found and deleted, update the availabilities

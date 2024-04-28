@@ -1,7 +1,7 @@
 /* UpdatePage.css */
 
 .find-restaurant-container {
-    height: 100vh; /* Set the height to full viewport height */
+    height: 100vh; 
     width: 100vw; /* Set the width to full viewport width */
     background-size: cover; /* Ensure background covers the full container */
     background-position: center; /* Center the background image */
@@ -11,12 +11,12 @@
   }
   
   .content-wrapper {
-    background-color: rgba(255, 255, 255, 0.8); /* Adjust transparency as needed */
+    background-color: rgba(255, 255, 255, 0.8); 
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: auto; /* Adjust width as needed, or use max-width for better control */
-    max-width: 80%; /* Example to prevent it from covering the full width */
+    width: auto; 
+    max-width: 80%; 
   }
   
   .button-container {
@@ -75,7 +75,7 @@
   margin-top: 10px;
   padding: 10px;
   font-size: 16px;
-  width: 80%; /* Adjust based on your design */
+  width: 80%; 
   border: 1px solid #ccc;
   border-radius: 4px;
 }
