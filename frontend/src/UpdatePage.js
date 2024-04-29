@@ -6,6 +6,7 @@ function UpdatePage() {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [reservationCode, setReservationCode] = useState('');
+  
 
   const handleUpdate = () => {
     setShowUpdateModal(true);  // Show the update modal when update is clicked
@@ -41,6 +42,7 @@ function UpdatePage() {
 function Modal({ onClose, action, reservationCode, setReservationCode }) {
   const [isDeleted, setIsDeleted] = useState(false);
   const [message, setMessage] = useState('');
+  const [occasion, setOccasion] = useState('');
 
   const handleInputChange = (event) => {
     const input = event.target.value;
@@ -49,17 +51,25 @@ function Modal({ onClose, action, reservationCode, setReservationCode }) {
     }
   };
 
-  const performAction = async () => {
+  const handleOccasion = (event) => {
+    const input = event.target.value;
+        setOccasion(input);
+  };
+
+  const performAction = async (event) => {
     try {
       let url;
+      let actionMethod;
       if (action === 'delete') {
         url = `/delete-reservation/${reservationCode}`;
+        actionMethod = 'DELETE'
       } else if (action === 'update') {
-        // Perform update action
-        // Example: url = `/update-reservation/${reservationCode}`;
+            url = `/update-occasion?reservationCode=${reservationCode}&occasion=${occasion}`;
+            console.log(url)
+            actionMethod = 'PUT'
       }
 
-      const response = await fetch(url, { method: 'DELETE' }); // Change method according to the action
+      const response = await fetch(url, { method: actionMethod });
       const data = await response.json();
       console.log(data.message);
 
@@ -80,7 +90,7 @@ function Modal({ onClose, action, reservationCode, setReservationCode }) {
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        <h2>{action === 'update' ? 'Please enter your reservation code:' : 'Please enter your reservation code:'}</h2>
+        <h2>{action === 'update' ? 'Update occasion:' : 'Please enter your reservation code:'}</h2>
         <input
           type="text"
           placeholder="Reservation Code"
@@ -88,6 +98,15 @@ function Modal({ onClose, action, reservationCode, setReservationCode }) {
           onChange={handleInputChange}
           className="reservation-input"
         />
+        {action === 'update' && (
+        <input
+          type="text"
+          placeholder="New Occasion"
+          value={occasion}
+          onChange={handleOccasion}
+          className="reservation-input"
+        />
+        )}
         {!isDeleted && (
           <>
             <button onClick={performAction}>{action === 'update' ? 'Update' : 'Confirm Deletion'}</button>

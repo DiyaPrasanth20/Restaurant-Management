@@ -7,6 +7,55 @@ app = Flask(__name__)
 # Allow cross-origin requests from the React frontend
 CORS(app)
 
+
+
+
+def create_indexes():
+    try:
+        db_config = {
+            'host': 'localhost',
+            'user': 'root',
+            'database': 'BooknDine'
+        }
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        
+        # Index for reservation table
+        cursor.execute("SHOW INDEX FROM reservation WHERE Key_name = 'idx_reservation_code'")
+        result = cursor.fetchone()
+        if not result:
+            cursor.execute("CREATE INDEX idx_reservation_code ON reservation (reservation_code)")
+        cursor.fetchall()  # Fetch and discard the result
+
+        # Index for availabilities table
+        cursor.execute("SHOW INDEX FROM availabilities WHERE Key_name = 'idx_restaurant_name_date'")
+        result = cursor.fetchone()
+        if not result:
+            cursor.execute("CREATE INDEX idx_restaurant_name_date ON availabilities (restaurant_name(255), date(255))")
+        cursor.fetchall()  # Fetch and discard the result
+
+        # Index for restaurant table
+        cursor.execute("SHOW INDEX FROM restaurants WHERE Key_name = 'idx_cuisine'")
+        result = cursor.fetchone()
+        if not result:
+            cursor.execute("CREATE INDEX idx_cuisine ON restaurants (cuisine_type)")
+        cursor.fetchall()  # Fetch and discard the result
+
+
+        connection.commit()
+        cursor.close()
+        connection.close()
+        print("Indexes created successfully.")
+    except Exception as e:
+        print("Error creating indexes:", e)
+
+# Call the function to create the indexes
+create_indexes()
+
+
+
+
 @app.route('/cuisine_types', methods=['GET'])
 def get_cuisine_types():
     try:
@@ -84,8 +133,6 @@ def get_matching_restaurants():
 
 
 
-
-
 #for the BookPage.js
 @app.route('/restaurant_names', methods=['GET'])
 def fetch_restaurant_names():
@@ -156,6 +203,7 @@ BEGIN
 
     -- Start the transaction
     START TRANSACTION;
+    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
     -- Try updating the availability table
     UPDATE availabilities 
@@ -248,6 +296,7 @@ BEGIN
 
     -- Start the transaction
     START TRANSACTION;
+    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
     -- Check if reservation exists
     SELECT restaurant_name, booking_date
@@ -336,38 +385,30 @@ def delete_reservation(reservation_code):
 
 ###############FOR UPDATES ########################
 
-@app.route('/newdates', methods=['GET'])
-def fetch_newdates():
-    try:
-        reservation_code = request.args.get('reservation_code')
-        connection = mysql.connector.connect(
+@app.route('/update-occasion', methods=['PUT'])
+def update_occasion():
+    reservation_code = int(request.args.get('reservationCode'))
+    occasion = request.args.get('occasion')
+    connection = mysql.connector.connect(
             host='localhost',
             user='root',
             database='BooknDine'
         )
-        cursor = connection.cursor()
-        cursor.execute("""
-            SELECT a.date 
-            FROM reservation r
-            JOIN availabilities a ON r.restaurant_name = a.restaurant_name
-            WHERE r.reservation_code = %s AND a.num_tables_open >= 1;
-        """, (reservation_code,))
-        dates = [row[0] for row in cursor.fetchall()]
-        response = jsonify(dates)
-        return response
-    except Exception as e:
-        error_message = "An error occurred while fetching dates."
-        return jsonify({'error': error_message}), 500  # Return JSON error response with status code 500
-    finally:
-        if cursor is not None:
-            cursor.close()
-        if connection is not None:
-            connection.close()
+    cursor = connection.cursor()
+    
+    '''
+    statement = f"UPDATE reservation SET occasion = \'{occasion}\' WHERE reservation_code = {reservation_code};"
+    print(statement)
+    cursor.execute(statement)
 
+    '''
 
+    statement = "UPDATE reservation SET occasion = %s WHERE reservation_code = %s"
+    cursor.execute(statement, (occasion, reservation_code))
 
-
-
+    connection.commit()
+    print(cursor.fetchall())
+    return jsonify({'real': 'done'})
 
 
 

@@ -2,7 +2,7 @@ Database Name: BooknDine
 
 Database Schema:
 
-CREATE TABLE restaurant ( 
+CREATE TABLE restaurants ( 
     name TEXT PRIMARY KEY, 
     rating NUMERIC,
     city TEXT, 
