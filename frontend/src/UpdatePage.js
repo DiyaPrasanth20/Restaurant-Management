@@ -3,15 +3,24 @@ import './UpdatePage.css';
 import backgroundImage from './images/findResOne.jpg';
 
 function UpdatePage() {
-  const [showModal, setShowModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [reservationCode, setReservationCode] = useState('');
 
-  const handleDelete = () => {
-    setShowModal(true);  // Show the modal when delete is clicked
+  const handleUpdate = () => {
+    setShowUpdateModal(true);  // Show the update modal when update is clicked
   };
 
-  const closeModal = () => {
-    setShowModal(false);  // Hide the modal
+  const handleDelete = () => {
+    setShowDeleteModal(true);  // Show the delete modal when delete is clicked
+  };
+
+  const closeUpdateModal = () => {
+    setShowUpdateModal(false);  // Hide the update modal
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);  // Hide the delete modal
   };
 
   return (
@@ -19,48 +28,59 @@ function UpdatePage() {
       <div className="content-wrapper">
         <h1>Would you like to modify or delete your reservation?</h1>
         <div className="button-container">
-          <button className="update-button">Update</button>
+          <button className="update-button" onClick={handleUpdate}>Update</button>
           <button className="delete-button" onClick={handleDelete}>Delete</button>
         </div>
-        {showModal && <Modal onClose={closeModal} reservationCode={reservationCode} setReservationCode={setReservationCode} />}
+        {showUpdateModal && <Modal onClose={closeUpdateModal} action="update" reservationCode={reservationCode} setReservationCode={setReservationCode} />}
+        {showDeleteModal && <Modal onClose={closeDeleteModal} action="delete" reservationCode={reservationCode} setReservationCode={setReservationCode} />}
       </div>
     </div>
   );
 }
 
-function Modal({ onClose, reservationCode, setReservationCode }) {
+function Modal({ onClose, action, reservationCode, setReservationCode }) {
   const [isDeleted, setIsDeleted] = useState(false);
+  const [message, setMessage] = useState('');
 
   const handleInputChange = (event) => {
     const input = event.target.value;
-    // Regex to ensure only numeric input is accepted
     if (/^\d*$/.test(input)) {
       setReservationCode(input);
     }
   };
 
-  const confirmDeletion = async () => {
-    if (reservationCode) {
-        try {
-            const response = await fetch(`/delete-reservation/${reservationCode}`, { method: 'DELETE' });
-            const data = await response.json();
-            if (response.ok) {
-                setIsDeleted(true);
-            } else {
-                throw new Error(data.error || 'Failed to delete reservation');
-            }
-        } catch (error) {
-            alert(error.message);
-        }
-    } else {
-        alert('Please enter a valid reservation code.');
+  const performAction = async () => {
+    try {
+      let url;
+      if (action === 'delete') {
+        url = `/delete-reservation/${reservationCode}`;
+      } else if (action === 'update') {
+        // Perform update action
+        // Example: url = `/update-reservation/${reservationCode}`;
+      }
+
+      const response = await fetch(url, { method: 'DELETE' }); // Change method according to the action
+      const data = await response.json();
+      console.log(data.message);
+
+      if (response.ok) {
+        setIsDeleted(true);
+        setMessage(data.message);
+      } else {
+        setMessage(data.message);
+        setIsDeleted(true);
+      }
+    } catch (error) {
+      console.error('Failed to perform action:', error);
+      setIsDeleted(false);
+      setMessage('Network error, please try again later.');
     }
-};
+  };
 
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        <h2>Please enter your reservation code:</h2>
+        <h2>{action === 'update' ? 'Please enter your reservation code:' : 'Please enter your reservation code:'}</h2>
         <input
           type="text"
           placeholder="Reservation Code"
@@ -69,11 +89,13 @@ function Modal({ onClose, reservationCode, setReservationCode }) {
           className="reservation-input"
         />
         {!isDeleted && (
-          <button onClick={confirmDeletion}>Confirm Deletion</button>
+          <>
+            <button onClick={performAction}>{action === 'update' ? 'Update' : 'Confirm Deletion'}</button>
+          </>
         )}
         {isDeleted && (
           <>
-            <h2>Your reservation has been deleted.</h2>
+            <h2>{message}</h2>
             <button onClick={onClose}>Close</button>
           </>
         )}

@@ -232,9 +232,53 @@ def book_table():
 
 ##############FOR DELETION ###############################
 
+# Define the stored procedure creation query
+create_another_proc_query = """
+CREATE PROCEDURE delete_reservation_proc(
+    IN p_reservation_code INT,
+    OUT p_status INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Rollback the transaction if an error occurs
+        ROLLBACK;
+        SET p_status = -1;  -- Indicates an error occurred
+    END;
+
+    -- Start the transaction
+    START TRANSACTION;
+
+    -- Check if reservation exists
+    SELECT restaurant_name, booking_date
+    INTO @restaurant_name, @booking_date
+    FROM reservation
+    WHERE reservation_code = p_reservation_code
+    FOR UPDATE;
+
+    -- If no reservation found, rollback and set success status to false
+    IF ROW_COUNT() = 0 THEN
+        ROLLBACK;
+        SET p_status = 0;  -- Indicates no reservation found
+    ELSE
+        -- Delete the reservation
+        DELETE FROM reservation WHERE reservation_code = p_reservation_code;
+
+        -- Update the availabilities
+        UPDATE availabilities
+        SET num_tables_open = num_tables_open + 1
+        WHERE restaurant_name = @restaurant_name AND date = @booking_date;
+
+        -- Commit the transaction
+        COMMIT;
+        SET p_status = 1;  -- Indicates success
+    END IF;
+    SELECT p_status AS message;
+END;
+"""
+
 @app.route('/delete-reservation/<int:reservation_code>', methods=['DELETE'])
 def delete_reservation(reservation_code):
-    connection = None
     try:
         connection = mysql.connector.connect(
             host='localhost',
@@ -242,38 +286,89 @@ def delete_reservation(reservation_code):
             database='BooknDine'
         )
         cursor = connection.cursor()
+        cursor.execute("SHOW PROCEDURE STATUS LIKE 'delete_reservation_proc'")
+        procedure_exists = cursor.fetchone()
 
-        # Start the transaction
-        cursor.execute("START TRANSACTION")
+        # If the procedure doesn't exist, create it
+        if not procedure_exists:
+            cursor.execute(create_another_proc_query)
 
-        # retrieve necessary data before deleting
-        cursor.execute("SELECT restaurant_name, booking_date FROM reservation WHERE reservation_code = %s", (reservation_code,))
-        reservation_details = cursor.fetchone()
-        if not reservation_details:
-            connection.rollback()  # Rollback if no reservation found
-            return jsonify({'error': 'No reservation found with that code'}), 404
+        # Call the stored procedure
+        result_args = [reservation_code, 500]  # Prepare output param
+        cursor.callproc("delete_reservation_proc", result_args)
+        
+        status = result_args[1]  # Retrieve the output status
+        print(result_args)
 
-        # delete the reservation
-        cursor.execute("DELETE FROM reservation WHERE reservation_code = %s", (reservation_code,))
+        for result in cursor.stored_results():
+            
+            status = result.fetchall()[0][0]
 
-        # If the reservation was found and deleted, update the availabilities
-        restaurant_name, booking_date = reservation_details
-        cursor.execute("""
-            UPDATE availabilities
-            SET num_tables_open = num_tables_open + 1
-            WHERE restaurant_name = %s AND date = %s
-        """, (restaurant_name, booking_date))
+        print(status)
+    
+        if status == 1:
+            message = 'Reservation deleted successfully'
+            return_code = 200
+        elif status == 0:
+            message = 'Invalid reservation code'
+            return_code = 404
+        else:
+            message = 'An error occurred while deleting the reservation'
+            return_code = 500
 
         connection.commit()
-        return jsonify({'success': 'Reservation deleted and availability updated successfully'}), 200
+        return jsonify({'success': status == 1, 'message': message}), return_code
+
     except Exception as e:
-        if connection:
-            connection.rollback()
-        print(f"An error occurred: {str(e)}")
-        return jsonify({'error': 'Failed to delete reservation'}), 500
+        error_message = "An error occurred while deleting reservation: " + str(e)
+        print("Error:", e)  # Print the error message to debug
+        return jsonify({'error': error_message}), 500
     finally:
-        if connection:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
             connection.close()
+
+
+
+
+
+
+###############FOR UPDATES ########################
+
+@app.route('/newdates', methods=['GET'])
+def fetch_newdates():
+    try:
+        reservation_code = request.args.get('reservation_code')
+        connection = mysql.connector.connect(
+            host='localhost',
+            user='root',
+            database='BooknDine'
+        )
+        cursor = connection.cursor()
+        cursor.execute("""
+            SELECT a.date 
+            FROM reservation r
+            JOIN availabilities a ON r.restaurant_name = a.restaurant_name
+            WHERE r.reservation_code = %s AND a.num_tables_open >= 1;
+        """, (reservation_code,))
+        dates = [row[0] for row in cursor.fetchall()]
+        response = jsonify(dates)
+        return response
+    except Exception as e:
+        error_message = "An error occurred while fetching dates."
+        return jsonify({'error': error_message}), 500  # Return JSON error response with status code 500
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
+
+
+
+
+
 
 
 
