@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import './FindRestaurantPage.css'; // Import the CSS file
-import findResOne from './images/findResOne.jpg'; // Import the image file
+import './FindRestaurantPage.css'; 
+import findResOne from './images/findResOne.jpg'; 
 
 const FindRestaurantPage = () => {
   const [cuisineTypes, setCuisineTypes] = useState([]);

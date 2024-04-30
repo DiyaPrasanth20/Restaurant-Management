@@ -9,19 +9,19 @@ function UpdatePage() {
   
 
   const handleUpdate = () => {
-    setShowUpdateModal(true);  // Show the update modal when update is clicked
+    setShowUpdateModal(true);  
   };
 
   const handleDelete = () => {
-    setShowDeleteModal(true);  // Show the delete modal when delete is clicked
+    setShowDeleteModal(true);  
   };
 
   const closeUpdateModal = () => {
-    setShowUpdateModal(false);  // Hide the update modal
+    setShowUpdateModal(false);  
   };
 
   const closeDeleteModal = () => {
-    setShowDeleteModal(false);  // Hide the delete modal
+    setShowDeleteModal(false);  
   };
 
   return (
@@ -32,6 +32,7 @@ function UpdatePage() {
           <button className="update-button" onClick={handleUpdate}>Update</button>
           <button className="delete-button" onClick={handleDelete}>Delete</button>
         </div>
+        
         {showUpdateModal && <Modal onClose={closeUpdateModal} action="update" reservationCode={reservationCode} setReservationCode={setReservationCode} />}
         {showDeleteModal && <Modal onClose={closeDeleteModal} action="delete" reservationCode={reservationCode} setReservationCode={setReservationCode} />}
       </div>
@@ -41,6 +42,7 @@ function UpdatePage() {
 
 function Modal({ onClose, action, reservationCode, setReservationCode }) {
   const [isDeleted, setIsDeleted] = useState(false);
+  const [isUpdated, setIsUpdated] = useState(false);
   const [message, setMessage] = useState('');
   const [occasion, setOccasion] = useState('');
 
@@ -67,11 +69,15 @@ function Modal({ onClose, action, reservationCode, setReservationCode }) {
             url = `/update-occasion?reservationCode=${reservationCode}&occasion=${occasion}`;
             console.log(url)
             actionMethod = 'PUT'
-      }
+      } 
 
       const response = await fetch(url, { method: actionMethod });
       const data = await response.json();
-      console.log(data.message);
+      
+      if (data?.reserve === false) {
+         setIsUpdated(true);
+         console.log(isUpdated)
+      }
 
       if (response.ok) {
         setIsDeleted(true);
@@ -107,6 +113,7 @@ function Modal({ onClose, action, reservationCode, setReservationCode }) {
           className="reservation-input"
         />
         )}
+        {isUpdated && <h2>Invalid Reservation</h2>}
         {!isDeleted && (
           <>
             <button onClick={performAction}>{action === 'update' ? 'Update' : 'Confirm Deletion'}</button>

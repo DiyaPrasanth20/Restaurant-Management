@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import './BookPage.css'; // Import the CSS file
-import backgroundImage from './images/findResOne.jpg'; // Import the background image
+import './BookPage.css';
+import backgroundImage from './images/findResOne.jpg'; 
 
 function BookPage() {
   const [restaurantNames, setRestaurantNames] = useState([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState('');
   const [dates, setDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState('');
-  const [occasion, setOccasion] = useState(''); // State to store the occasion
+  const [occasion, setOccasion] = useState(''); 
   const [reservationMessage, setReservationMessage] = useState('');
 
   useEffect(() => {
@@ -36,7 +36,7 @@ function BookPage() {
 
   const handleRestaurantChange = (event) => {
     setSelectedRestaurant(event.target.value);
-    setSelectedDate(''); // Reset selected date when restaurant changes
+    setSelectedDate(''); 
   };
 
   const handleDateChange = (event) => {
@@ -44,7 +44,7 @@ function BookPage() {
   };
 
   const handleOccasionChange = (event) => {
-    setOccasion(event.target.value); // Update the occasion state
+    setOccasion(event.target.value); 
   };
 
   const handleSubmit = (event) => {
@@ -104,7 +104,7 @@ function BookPage() {
           <button type="submit">Book Now!</button>
         </form>
         {reservationMessage && <p>{reservationMessage}</p>}
-        {/* Add other content here */}
+        {}
       </div>
     </div>
   );

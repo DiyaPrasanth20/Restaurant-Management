@@ -4,7 +4,7 @@ import mysql.connector
 
 app = Flask(__name__)
 
-# Allow cross-origin requests from the React frontend
+
 CORS(app)
 
 
@@ -21,26 +21,26 @@ def create_indexes():
         cursor = connection.cursor()
 
         
-        # Index for reservation table
+        
         cursor.execute("SHOW INDEX FROM reservation WHERE Key_name = 'idx_reservation_code'")
         result = cursor.fetchone()
         if not result:
             cursor.execute("CREATE INDEX idx_reservation_code ON reservation (reservation_code)")
-        cursor.fetchall()  # Fetch and discard the result
+        cursor.fetchall() 
 
-        # Index for availabilities table
+    
         cursor.execute("SHOW INDEX FROM availabilities WHERE Key_name = 'idx_restaurant_name_date'")
         result = cursor.fetchone()
         if not result:
             cursor.execute("CREATE INDEX idx_restaurant_name_date ON availabilities (restaurant_name(255), date(255))")
-        cursor.fetchall()  # Fetch and discard the result
+        cursor.fetchall() 
 
-        # Index for restaurant table
+        
         cursor.execute("SHOW INDEX FROM restaurants WHERE Key_name = 'idx_cuisine'")
         result = cursor.fetchone()
         if not result:
             cursor.execute("CREATE INDEX idx_cuisine ON restaurants (cuisine_type)")
-        cursor.fetchall()  # Fetch and discard the result
+        cursor.fetchall()  
 
 
         connection.commit()
@@ -50,11 +50,11 @@ def create_indexes():
     except Exception as e:
         print("Error creating indexes:", e)
 
-# Call the function to create the indexes
+
 create_indexes()
 
 
-
+###################### FILTERING ##############################
 
 @app.route('/cuisine_types', methods=['GET'])
 def get_cuisine_types():
@@ -71,7 +71,7 @@ def get_cuisine_types():
         return response
     except Exception as e:
         error_message = "An error occurred while fetching cuisine types."
-        return jsonify({'error': error_message}), 500  # Return JSON error response with status code 500
+        return jsonify({'error': error_message}), 500 
     finally:
         if cursor is not None:
             cursor.close()
@@ -96,7 +96,7 @@ def get_locations():
         return response
     except Exception as e:
         error_message = "An error occurred while fetching locations."
-        return jsonify({'error': error_message}), 500  # Return JSON error response with status code 500
+        return jsonify({'error': error_message}), 500  
     finally:
         if cursor is not None:
             cursor.close()
@@ -109,7 +109,7 @@ def get_locations():
 def get_matching_restaurants():
     try:
         cuisine_type = request.args.get('cuisine')
-        max_price = request.args.get('max_price')  # Get the max_price parameter
+        max_price = request.args.get('max_price')  
         city =  request.args.get('city')
         connection = mysql.connector.connect(
             host='localhost',
@@ -117,13 +117,13 @@ def get_matching_restaurants():
             database='BooknDine'
         )
         cursor = connection.cursor(dictionary=True)
-        # Modify the SQL query to include both cuisine type and max price conditions
+        
         cursor.execute("SELECT * FROM restaurants WHERE cuisine_type = %s AND max_price <= %s AND city = %s;", (cuisine_type, max_price, city))
         matching_restaurants = cursor.fetchall()
         return jsonify(matching_restaurants)
     except Exception as e:
         error_message = "An error occurred while fetching matching restaurants."
-        return jsonify({'error': error_message}), 500  # Return JSON error response with status code 500
+        return jsonify({'error': error_message}), 500  
     finally:
         if cursor is not None:
             cursor.close()
@@ -133,7 +133,8 @@ def get_matching_restaurants():
 
 
 
-#for the BookPage.js
+################################ BOOKING ##############################
+
 @app.route('/restaurant_names', methods=['GET'])
 def fetch_restaurant_names():
     try:
@@ -149,7 +150,7 @@ def fetch_restaurant_names():
         return response
     except Exception as e:
         error_message = "An error occurred while fetching restaurant_names"
-        return jsonify({'error': error_message}), 500  # Return JSON error response with status code 500
+        return jsonify({'error': error_message}), 500 
     finally:
         if cursor is not None:
             cursor.close()
@@ -173,7 +174,7 @@ def fetch_dates():
         return response
     except Exception as e:
         error_message = "An error occurred while fetching dates."
-        return jsonify({'error': error_message}), 500  # Return JSON error response with status code 500
+        return jsonify({'error': error_message}), 500  
     finally:
         if cursor is not None:
             cursor.close()
@@ -183,7 +184,7 @@ def fetch_dates():
 
 
 
-# Define the stored procedure creation query
+
 create_proc_query = """
 CREATE PROCEDURE book_table_proc(
     IN p_restaurant_name VARCHAR(255),
@@ -235,7 +236,7 @@ BEGIN
 END;
 """
 
-# Define the route
+
 @app.route('/book-table', methods=['PUT'])
 def book_table():
     try:
@@ -250,25 +251,25 @@ def book_table():
         )
         cursor = connection.cursor()
 
-        # Check if the stored procedure exists
+       
         cursor.execute("SHOW PROCEDURE STATUS LIKE 'book_table_proc'")
         procedure_exists = cursor.fetchone()
 
-        # If the procedure doesn't exist, create it
+       
         if not procedure_exists:
             cursor.execute(create_proc_query)
 
-        # Call the stored procedure
+       
         cursor.callproc("book_table_proc", (restaurant_name, date, occasion, 0))
 
-        # Get the output parameter (reservation_code)
+    
         for result in cursor.stored_results():
             reservation_code = result.fetchone()[0]
 
         return jsonify({'success': True, 'reservation_code': reservation_code}), 200
     except Exception as e:
         error_message = "An error occurred while booking table: " + str(e)
-        print("Error:", e)  # Print the error message to debug
+        print("Error:", e) 
         return jsonify({'error': error_message}), 500
     finally:
         if cursor is not None:
@@ -280,7 +281,7 @@ def book_table():
 
 ##############FOR DELETION ###############################
 
-# Define the stored procedure creation query
+
 create_another_proc_query = """
 CREATE PROCEDURE delete_reservation_proc(
     IN p_reservation_code INT,
@@ -338,15 +339,15 @@ def delete_reservation(reservation_code):
         cursor.execute("SHOW PROCEDURE STATUS LIKE 'delete_reservation_proc'")
         procedure_exists = cursor.fetchone()
 
-        # If the procedure doesn't exist, create it
+
         if not procedure_exists:
             cursor.execute(create_another_proc_query)
 
-        # Call the stored procedure
-        result_args = [reservation_code, 500]  # Prepare output param
+        
+        result_args = [reservation_code, 500]  
         cursor.callproc("delete_reservation_proc", result_args)
         
-        status = result_args[1]  # Retrieve the output status
+        status = result_args[1]  
         print(result_args)
 
         for result in cursor.stored_results():
@@ -370,7 +371,7 @@ def delete_reservation(reservation_code):
 
     except Exception as e:
         error_message = "An error occurred while deleting reservation: " + str(e)
-        print("Error:", e)  # Print the error message to debug
+        print("Error:", e) 
         return jsonify({'error': error_message}), 500
     finally:
         if cursor is not None:
@@ -402,13 +403,20 @@ def update_occasion():
     cursor.execute(statement)
 
     '''
+    statement_check = f"SELECT * FROM reservation WHERE reservation_code = {reservation_code}"
+    cursor.execute(statement_check)
+    result = cursor.fetchall()
+    print(result)
+    if result == None or len(result) < 1:
+        return jsonify({'reserve': False}), 200
+
 
     statement = "UPDATE reservation SET occasion = %s WHERE reservation_code = %s"
     cursor.execute(statement, (occasion, reservation_code))
-
     connection.commit()
-    print(cursor.fetchall())
-    return jsonify({'real': 'done'})
+    status = cursor.fetchall()
+    connection.commit()
+    return jsonify({'reserve': True}), 200
 
 
 
