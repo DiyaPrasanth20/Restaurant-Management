@@ -2,4 +2,4 @@
 
 
 
-Information about creating mock tables for database is located in frontend folder (databaseDescription.md) 
+Information about creating mock tables for database is located in frontend folder in databaseDescription.md.  
